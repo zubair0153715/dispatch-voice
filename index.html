@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DispatchVoice — AI Voice Agents for Truck Dispatching</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🚛</span>
+    <div>
+      <h1>DispatchVoice</h1>
+      <p class="tagline">US truck dispatching, run by AI voice agents — $0, browser only</p>
+    </div>
+  </div>
+  <div class="top-stats" id="topStats"></div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="board" role="tab">📋 Dispatch Board</button>
+  <button class="tab" data-tab="calls" role="tab">🎙️ Voice Calls</button>
+  <button class="tab" data-tab="log" role="tab">📞 Call Log</button>
+  <button class="tab" data-tab="analytics" role="tab">📊 Analytics</button>
+  <button class="tab" data-tab="agents" role="tab">🤖 Agents</button>
+</nav>
+
+<main>
+  <!-- ============ DISPATCH BOARD ============ -->
+  <section id="tab-board" class="panel active">
+    <div class="panel-head">
+      <h2>Live Dispatch Board</h2>
+      <button class="btn" id="refreshBoardBtn">🔄 Refresh load board</button>
+    </div>
+    <p class="hint">Simulated load board (demo data — no real DAT / Truckstop account). Book a load to assign it to an available truck.</p>
+
+    <h3>🚚 Fleet — 5 owner-operators</h3>
+    <div class="cards" id="truckCards"></div>
+
+    <h3>📦 Active loads</h3>
+    <div id="activeLoads"></div>
+
+    <h3>📌 Load board feed <span class="demo-tag">SIMULATED</span></h3>
+    <div class="board-controls">
+      <label>Filter by equipment:
+        <select id="equipFilter">
+          <option value="">All equipment</option>
+          <option>Dry Van</option>
+          <option>Reefer</option>
+          <option>Flatbed</option>
+          <option>Step Deck</option>
+          <option>Box Truck</option>
+        </select>
+      </label>
+      <label>Sort:
+        <select id="sortBoard">
+          <option value="rpm-desc">Highest $/mile</option>
+          <option value="rate-desc">Highest rate</option>
+          <option value="miles-asc">Shortest haul</option>
+        </select>
+      </label>
+    </div>
+    <div class="cards" id="loadCards"></div>
+  </section>
+
+  <!-- ============ VOICE CALLS ============ -->
+  <section id="tab-calls" class="panel">
+    <div class="panel-head">
+      <h2>Voice Call Simulator</h2>
+      <span class="mic-status" id="micStatus">🎤 Mic: idle</span>
+    </div>
+    <p class="hint">Real browser voice: your mic → SpeechRecognition → agent engine → speechSynthesis. Speak over the agent any time — it stops and listens (barge-in). Chrome / Edge required for speech recognition; other browsers can type instead.</p>
+    <div id="voiceSupport" class="notice"></div>
+
+    <div class="call-setup">
+      <label>Agent
+        <select id="agentSelect"></select>
+      </label>
+      <label>Scenario
+        <select id="scenarioSelect"></select>
+      </label>
+      <button class="btn primary" id="startCallBtn">📞 Start call</button>
+      <button class="btn danger" id="endCallBtn" disabled>⏹ End call</button>
+    </div>
+
+    <div class="call-stage" id="callStage">
+      <div class="agent-face" id="agentFace">🤖</div>
+      <div class="agent-info">
+        <strong id="callAgentName">No active call</strong>
+        <span id="callScenario"></span>
+        <span id="callTimer">00:00</span>
+        <span id="callState" class="state-idle">Idle</span>
+      </div>
+      <button class="btn" id="interruptBtn" disabled>✋ Interrupt (barge-in)</button>
+    </div>
+
+    <div class="transcript-box">
+      <h3>Live transcript</h3>
+      <div id="transcript" class="transcript"><p class="muted">Start a call — the agent will greet you by voice.</p></div>
+      <div class="say-row">
+        <input id="textReply" type="text" placeholder="Or type your reply here (works in any browser)…" disabled>
+        <button class="btn" id="sendTextBtn" disabled>Send</button>
+        <button class="btn" id="listenBtn" disabled>🎤 Listen</button>
+      </div>
+      <p class="hint">Tip: say “yes”, “no”, a number, or a status word (“loaded”, “en route”, “delivered”, “delayed”). The agent follows its script from your words.</p>
+    </div>
+  </section>
+
+  <!-- ============ CALL LOG ============ -->
+  <section id="tab-log" class="panel">
+    <div class="panel-head">
+      <h2>Call Log &amp; Transcripts</h2>
+      <button class="btn" id="clearLogBtn">🗑 Clear log</button>
+    </div>
+    <p class="hint">Saved in your browser (localStorage). “Recordings” are transcripts + TTS replay, not stored audio.</p>
+    <div id="callLog"></div>
+  </section>
+
+  <!-- ============ ANALYTICS ============ -->
+  <section id="tab-analytics" class="panel">
+    <h2>Analytics</h2>
+    <p class="hint">Computed from this browser session only (booked loads + completed calls).</p>
+    <div class="cards" id="analyticsCards"></div>
+    <h3>Negotiation uplift — per load</h3>
+    <div id="upliftTable"></div>
+  </section>
+
+  <!-- ============ AGENTS ============ -->
+  <section id="tab-agents" class="panel">
+    <h2>The 6 Voice Agents</h2>
+    <p class="hint">Each agent has its own voice (pitch / rate), greeting and scripted dialogue engine. Pick any agent in the Voice Calls tab.</p>
+    <div class="cards" id="agentCards"></div>
+  </section>
+</main>
+
+<footer>
+  <strong>Honest limits — please read:</strong>
+  <ul>
+    <li>Load board is <b>simulated demo data</b> — no real DAT / Truckstop account, no real brokers, no real loads.</li>
+    <li><b>No real phone calls.</b> Voice works in the browser only (mic + speakers). Real PSTN calls need Twilio or similar — paid, not included.</li>
+    <li><b>No real money.</b> Rates, invoices and factoring figures are demo numbers for practice.</li>
+    <li>Speech recognition needs <b>Chrome / Edge</b> (Web Speech API). Other browsers: type replies, agent still speaks.</li>
+    <li>Call logs live in your browser's localStorage only — nothing is uploaded anywhere.</li>
+  </ul>
+  <p class="muted">DispatchVoice — original code, MIT. Built for Zubair Ali. Demo data only; no fake clients, brokers or loads are presented as real.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
